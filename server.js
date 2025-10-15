@@ -9,7 +9,12 @@ console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 app.use(cors({
-  origin: true,
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow all origins for now (you can restrict this later)
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -110,9 +115,18 @@ async function start() {
       }
       
       try {
+        const customerId = req.session.userId.toString();
+        const username = req.session.username;
+        
+        // Find orders by either customerId OR customerName (more flexible)
         const userOrders = await orders.find({ 
-          customerId: req.session.userId.toString() 
-        }).toArray();
+          $or: [
+            { customerId: customerId },
+            { customerName: username }
+          ]
+        }).sort({ date: -1 }).toArray();
+        
+        console.log(`Found ${userOrders.length} orders for customer: ${username}`);
         res.json(userOrders);
       } catch (err) {
         console.error("Error fetching orders:", err);

@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // ✅ Serve everything inside the Frontend folder
-app.use(express.static(path.join(__dirname, "../Frontend")));
+app.use(express.static(path.join(__dirname, "Frontend")));
 
 // Connect to MongoDB
 const client = new MongoClient(process.env.MONGO_URI);
@@ -47,7 +47,7 @@ async function start() {
 
     // ✅ Root route: serve index.html automatically
     app.get("/", (req, res) => {
-      res.sendFile(path.join(__dirname, "../Frontend/index.html"));
+      res.sendFile(path.join(__dirname, "Frontend/index.html"));
     });
 
     // Start server (important fix: use Render's PORT if available)

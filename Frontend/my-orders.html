@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Orders - Game Deals Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/index.html">🏠 Home</a>
+      <a href="/cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+      <span id="customer-links">
+        <a id="auth-link" href="/login-customer.html">👤 Login</a>
+      </span>
+    </nav>
+    <div class="hero">
+      <h2>📦 My Orders</h2>
+      <p>Track your purchases and their status</p>
+    </div>
+  </header>
+
+  <main class="my-orders-wrapper">
+    <div class="card">
+      <table id="ordersTable" aria-label="My orders">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Items</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr id="noOrdersRow" style="display:none;">
+            <td colspan="5" class="no-orders">You have no orders yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <a href="/index.html">⬅ Continue shopping</a>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 Game Deals Hub</p>
+  </footer>
+
+  <script>
+    async function updateHeaderLinks() {
+      try {
+        const res = await fetch('/customer-check', { credentials: 'include' });
+        const data = await res.json();
+        const container = document.getElementById('customer-links');
+
+        if (data.authenticated) {
+          container.innerHTML = `
+            <a href="/my-orders.html">📦 My Orders</a>
+            <a href="#" id="logout-link">🚪 Logout</a>
+          `;
+          document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('https://gamehub-backend-a0c2.onrender.com/customer-logout', { credentials: 'include' });
+            window.location.href = "/login-customer.html";
+          });
+        } else {
+          container.innerHTML = `<a id="auth-link" href="/login-customer.html">👤 Login</a>`;
+        }
+      } catch (e) {
+        console.error('Header update failed:', e);
+      }
+    }
+
+    async function loadMyOrders() {
+      try {
+        const authRes = await fetch('https://gamehub-backend-a0c2.onrender.com/customer-check', { credentials: 'include' });
+        const auth = await authRes.json();
+        if (!auth.authenticated) {
+          window.location.href = "/login-customer.html";
+          return;
+        }
+
+        const res = await fetch('https://gamehub-backend-a0c2.onrender.com/my-orders', { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to fetch my orders');
+        const myOrders = await res.json();
+
+        const tbody = document.getElementById('ordersBody');
+        const noRow = document.getElementById('noOrdersRow');
+        tbody.innerHTML = '';
+
+        if (myOrders.length === 0) {
+          noRow.style.display = '';
+          tbody.appendChild(noRow);
+          return;
+        }
+
+        noRow.style.display = 'none';
+
+        myOrders.forEach(o => {
+          const tr = document.createElement('tr');
+          const total = typeof o.total === 'number' ? o.total.toFixed(2) : o.total;
+
+          tr.innerHTML = `
+            <td>${o.id}</td>
+            <td>$${total}</td>
+            <td>${new Date(o.date).toLocaleString()}</td>
+            <td>
+              <ul class="items">
+                ${(Array.isArray(o.items) ? o.items : []).map(i => `
+                  <li>${i.name} × ${i.qty}</li>
+                `).join('')}
+              </ul>
+            </td>
+            <td><span class="status ${o.status}">${o.status || 'Pending'}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        const tbody = document.getElementById('ordersBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="5" class="no-orders">Error loading orders.</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    updateHeaderLinks();
+    loadMyOrders();
+  </script>
+</body>
+</html>

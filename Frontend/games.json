@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "name": "Halo Infinite",
+    "price": 59.99,
+    "image": "/uploads/1760433674605-halo.jpg",
+    "category": "xbox"
+  },
+  {
+    "id": 2,
+    "name": "fc 25",
+    "price": 99.99,
+    "image": "/uploads/1760433722808-fifa 25.jpg",
+    "category": "playstation"
+  },
+  {
+    "id": 3,
+    "name": "free-fire",
+    "price": 99.99,
+    "image": "/uploads/1760433762712-free-fire.jpg",
+    "category": "Mobile "
+  },
+  {
+    "id": 4,
+    "name": "E-Football",
+    "price": 79.99,
+    "image": "/uploads/1760433813310-E-football.jpg",
+    "category": "Mobile"
+  },
+  {
+    "id": 5,
+    "name": "Dream-League Soccer",
+    "price": 99.99,
+    "image": "/uploads/1760433858544-dls.png",
+    "category": "Mobile"
+  },
+  {
+    "id": 6,
+    "name": "Fc-Mobile",
+    "price": 99.99,
+    "image": "/uploads/1760433986776-fc mobile.png",
+    "category": "Mobile"
+  },
+  {
+    "id": 7,
+    "name": "Call of Duty (War Zone)",
+    "price": 250,
+    "image": "/uploads/1760434032363-cod.jpg",
+    "category": "PC"
+  },
+  {
+    "id": 8,
+    "name": "Macbook",
+    "price": 249.99,
+    "image": "/uploads/1760434556054-macbook.jpg",
+    "category": "PC"
+  }
+]

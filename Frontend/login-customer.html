@@ -171,47 +171,57 @@
     });
 
     // Login handler
-    loginForm.addEventListener("submit", async e => {
-      e.preventDefault();
-      const form = e.target;
-      const res = await fetch("https://gamehub-backend-a0c2.onrender.com/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: form.username.value,
-          password: form.password.value
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("Welcome " + data.customer.username);
-        window.location.href = "/index.html";
-      } else {
-        alert(data.error || "Login failed");
-      }
+loginForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  
+  try {
+    const res = await fetch("https://gamehub-backend-a0c2.onrender.com/customer-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.get('username'),
+        password: formData.get('password')
+      })
     });
+    const data = await res.json();
+    if (data.success) {
+      alert("Welcome " + data.customer.username);
+      window.location.href = "/index.html";
+    } else {
+      alert(data.error || "Login failed");
+    }
+  } catch (error) {
+    alert("Network error: " + error.message);
+  }
+});
 
     // Register handler
-    registerForm.addEventListener("submit", async e => {
-      e.preventDefault();
-      const form = e.target;
-      const res = await fetch("https://gamehub-backend-a0c2.onrender.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: form.username.value,
-          email: form.email.value,
-          password: form.password.value
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("Registered successfully, now log in!");
-        showLogin();
-      } else {
-        alert(data.error || "Registration failed");
-      }
+registerForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  
+  try {
+    const res = await fetch("https://gamehub-backend-a0c2.onrender.com/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.get('username'),
+        email: formData.get('email'),
+        password: formData.get('password')
+      })
     });
+    const data = await res.json();
+    if (data.success) {
+      alert("Registered successfully, now log in!");
+      showLogin();
+    } else {
+      alert(data.error || "Registration failed");
+    }
+  } catch (error) {
+    alert("Network error: " + error.message);
+  }
+});
   </script>
 </body>
 </html>

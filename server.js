@@ -124,11 +124,15 @@ async function start() {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const { items, total } = req.body;
+      const { items, total, email, address, payment, customerName } = req.body;
       const newOrder = {
         id: `ORD-${Date.now()}`,
         customerId: req.session.userId.toString(),
-        customerName: req.session.username,
+        customerName: customerName || req.session.username,
+        name: customerName || req.session.username,
+        email,
+        address,
+        payment,
         items,
         total,
         status: "Pending",
@@ -137,6 +141,46 @@ async function start() {
 
       await orders.insertOne(newOrder);
       res.json({ success: true, orderId: newOrder.id });
+    });
+
+    // Get all orders (admin only)
+    app.get("/orders", async (req, res) => {
+      if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      try {
+        const allOrders = await orders.find({}).sort({ date: -1 }).toArray();
+        res.json(allOrders);
+      } catch (err) {
+        console.error("Error fetching all orders:", err);
+        res.status(500).json({ error: "Failed to fetch orders" });
+      }
+    });
+
+    // Update order status (admin only)
+    app.post("/update-order-status", async (req, res) => {
+      if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const { orderId, status } = req.body;
+      
+      try {
+        const result = await orders.updateOne(
+          { id: orderId },
+          { $set: { status: status } }
+        );
+
+        if (result.modifiedCount > 0) {
+          res.json({ success: true });
+        } else {
+          res.status(404).json({ error: "Order not found" });
+        }
+      } catch (err) {
+        console.error("Error updating order:", err);
+        res.status(500).json({ error: "Failed to update order" });
+      }
     });
 
     // ✅ Root route: serve index.html automatically

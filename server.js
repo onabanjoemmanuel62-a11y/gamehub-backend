@@ -1,0 +1,51 @@
+const express = require("express");
+const { MongoClient } = require("mongodb");
+const cors = require("cors");
+require("dotenv").config();
+console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
+
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Connect to MongoDB
+const client = new MongoClient(process.env.MONGO_URI);
+
+async function start() {
+  try {
+    await client.connect();
+    console.log("✅ Connected to MongoDB Atlas");
+
+    const db = client.db("gamehub"); // database name
+    const users = db.collection("users");
+
+    // Register route
+    app.post("/register", async (req, res) => {
+      const { username, password } = req.body;
+      const existing = await users.findOne({ username });
+      if (existing) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+      await users.insertOne({ username, password });
+      res.json({ success: true });
+    });
+
+    // Login route
+    app.post("/login", async (req, res) => {
+      const { username, password } = req.body;
+      const user = await users.findOne({ username, password });
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      res.json({ success: true, user: { username: user.username } });
+    });
+
+    // Start server
+    app.listen(3000, () => console.log("🚀 Server running on port 3000"));
+  } catch (err) {
+    console.error("❌ Error connecting to MongoDB:", err);
+  }
+}
+
+start();

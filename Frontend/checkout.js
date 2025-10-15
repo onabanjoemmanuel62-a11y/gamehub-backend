@@ -81,6 +81,9 @@ function placeOrder(e) {
       if (data.success) {
         localStorage.setItem("lastOrder", JSON.stringify({
           orderId: data.orderId,
+          name: name,
+          email: email,
+          payment: payment,
           items: cart,
           total: cart.reduce((sum, item) => sum + item.price * item.qty, 0)
         }));

@@ -2,8 +2,8 @@ const express = require("express");
 const { MongoClient } = require("mongodb");
 const cors = require("cors");
 require("dotenv").config();
-console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
 
+console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 app.use(cors());
@@ -41,8 +41,9 @@ async function start() {
       res.json({ success: true, user: { username: user.username } });
     });
 
-    // Start server
-    app.listen(3000, () => console.log("🚀 Server running on port 3000"));
+    // Start server (important fix: use Render's PORT if available)
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   } catch (err) {
     console.error("❌ Error connecting to MongoDB:", err);
   }

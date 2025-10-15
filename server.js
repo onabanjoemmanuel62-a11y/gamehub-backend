@@ -10,8 +10,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve your frontend folder
-app.use(express.static(path.join(__dirname, "../frontend")));
+// ✅ Serve everything inside the Frontend folder
+app.use(express.static(path.join(__dirname, "../Frontend")));
 
 // Connect to MongoDB
 const client = new MongoClient(process.env.MONGO_URI);
@@ -43,6 +43,11 @@ async function start() {
         return res.status(401).json({ error: "Invalid credentials" });
       }
       res.json({ success: true, user: { username: user.username } });
+    });
+
+    // ✅ Root route: serve index.html automatically
+    app.get("/", (req, res) => {
+      res.sendFile(path.join(__dirname, "../Frontend/index.html"));
     });
 
     // Start server (important fix: use Render's PORT if available)

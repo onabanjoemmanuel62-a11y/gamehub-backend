@@ -21,7 +21,7 @@ async function start() {
     await client.connect();
     console.log("✅ Connected to MongoDB Atlas");
 
-    const db = client.db("gamehub"); // database name
+    const db = client.db("gamehub");
     const users = db.collection("users");
 
     // Register route
@@ -50,9 +50,9 @@ async function start() {
       res.sendFile(path.join(__dirname, "Frontend/index.html"));
     });
 
-    // Start server (important fix: use Render's PORT if available)
+    // Start server - Listen on 0.0.0.0 for Render
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));
   } catch (err) {
     console.error("❌ Error connecting to MongoDB:", err);
   }

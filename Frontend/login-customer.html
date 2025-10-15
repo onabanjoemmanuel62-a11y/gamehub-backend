@@ -174,7 +174,7 @@
     loginForm.addEventListener("submit", async e => {
       e.preventDefault();
       const form = e.target;
-      const res = await fetch("https://gamehub-backend-a0c2.onrender.com/customer-login", {
+      const res = await fetch("https://gamehub-backend-a0c2.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

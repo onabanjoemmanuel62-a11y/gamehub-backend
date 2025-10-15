@@ -10,6 +10,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Simple health check - responds immediately
+app.get("/ping", (req, res) => {
+  res.send("pong");
+});
+
 // ✅ Serve everything inside the Frontend folder
 app.use(express.static(path.join(__dirname, "Frontend")));
 
@@ -26,16 +31,16 @@ async function start() {
 
     // Register route
     app.post("/register", async (req, res) => {
-      const { username, password } = req.body;
+      const { username, password, email } = req.body;
       const existing = await users.findOne({ username });
       if (existing) {
         return res.status(400).json({ error: "User already exists" });
       }
-      await users.insertOne({ username, password });
+      await users.insertOne({ username, password, email });
       res.json({ success: true });
     });
 
-    // Login route
+    // Admin login route
     app.post("/login", async (req, res) => {
       const { username, password } = req.body;
       const user = await users.findOne({ username, password });
@@ -43,6 +48,16 @@ async function start() {
         return res.status(401).json({ error: "Invalid credentials" });
       }
       res.json({ success: true, user: { username: user.username } });
+    });
+
+    // Customer login route (same as admin for now, but separate endpoint)
+    app.post("/customer-login", async (req, res) => {
+      const { username, password } = req.body;
+      const user = await users.findOne({ username, password });
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      res.json({ success: true, customer: { username: user.username } });
     });
 
     // ✅ Root route: serve index.html automatically

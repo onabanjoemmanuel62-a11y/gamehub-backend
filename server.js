@@ -1,6 +1,7 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
@@ -8,6 +9,9 @@ console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ✅ Serve your frontend folder
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 // Connect to MongoDB
 const client = new MongoClient(process.env.MONGO_URI);

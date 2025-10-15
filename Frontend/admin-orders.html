@@ -183,19 +183,25 @@
         // Attach change listeners
         document.querySelectorAll("select[data-id]").forEach(sel => {
           sel.addEventListener("change", async e => {
-            const orderId = parseInt(e.target.getAttribute("data-id"), 10);
+            const orderId = e.target.getAttribute("data-id"); // FIXED: Remove parseInt
             const status = e.target.value;
-            const updateRes = await fetch("https://gamehub-backend-a0c2.onrender.com/update-order-status", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ orderId, status })
-            });
-            const data = await updateRes.json();
-            if (data.success) {
-              alert(`Order ${orderId} updated to ${status}`);
-            } else {
-              alert("Failed to update order status");
+            
+            try {
+              const updateRes = await fetch("https://gamehub-backend-a0c2.onrender.com/update-order-status", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ orderId, status })
+              });
+              const data = await updateRes.json();
+              if (data.success) {
+                alert(`Order ${orderId} updated to ${status}`);
+              } else {
+                alert("Failed to update order status: " + (data.error || "Unknown error"));
+              }
+            } catch (err) {
+              console.error("Update error:", err);
+              alert("Network error while updating order");
             }
           });
         });

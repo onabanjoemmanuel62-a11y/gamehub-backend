@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --neon-blue: #00faff;
+      --neon-pink: #ff00ff;
+      --neon-green: #39ff14;
+      --bg-dark: #0a0f1f;
+    }
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(-45deg, var(--neon-blue), var(--neon-pink), var(--neon-green), #0011ff);
+      background-size: 400% 400%;
+      animation: gradientShift 20s ease infinite;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(20,20,40,0.9);
+      border: 1px solid rgba(0,255,255,0.3);
+      border-radius: 16px;
+      padding: 30px 24px;
+      box-shadow: 0 0 25px rgba(0,255,255,0.2), 0 0 50px rgba(255,0,255,0.1);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      color: var(--neon-blue);
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink);
+    }
+
+    p.helper {
+      margin: 0 0 18px;
+      color: #ccc;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin: 12px 0 6px;
+      color: #ddd;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      outline: none;
+      font-size: 14px;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+    input:focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px var(--neon-blue);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px;
+      border: 2px solid var(--neon-blue);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--neon-blue);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: var(--neon-blue);
+      color: #000;
+      box-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink);
+    }
+
+    .error {
+      margin-top: 10px;
+      color: #ff6b6b;
+      font-size: 0.9rem;
+      display: none;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    .footer a {
+      color: var(--neon-pink);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer a:hover {
+      color: #fff;
+      text-shadow: 0 0 10px var(--neon-pink);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🔐 Admin Login</h2>
+    <p class="helper">Sign in with your admin credentials to manage games.</p>
+    <form id="loginForm" novalidate>
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Enter username" autocomplete="username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required />
+
+      <button type="submit">Login</button>
+      <div id="error" class="error"></div>
+    </form>
+    <div class="footer">
+      <a href="/index.html">⬅ Back to store</a>
+    </div>
+  </div>
+
+  <script>
+    let submitting = false;
+
+    async function login(e) {
+      e.preventDefault();
+      if (submitting) return;
+      submitting = true;
+
+      const errorBox = document.getElementById('error');
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!username || !password) {
+        errorBox.textContent = 'Please enter both username and password.';
+        errorBox.style.display = 'block';
+        submitting = false;
+        return;
+      }
+
+      try {
+        const res = await fetch('https://gamehub-backend-a0c2.onrender.com/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (res.ok) {
+          window.location.href = '/admin.html';
+        } else {
+          const err = await res.json().catch(() => ({}));
+          errorBox.textContent = 'Login failed: ' + (err.error || res.statusText);
+          errorBox.style.display = 'block';
+        }
+      } catch (err) {
+        errorBox.textContent = 'Network error. Please try again.';
+        errorBox.style.display = 'block';
+      } finally {
+        submitting = false;
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', login);
+  </script>
+</body>
+</html>

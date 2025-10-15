@@ -1,0 +1,254 @@
+:root {
+  --neon-blue: #00faff;
+  --neon-pink: #ff00ff;
+  --neon-green: #39ff14;
+}
+
+/* Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Orbitron', sans-serif;
+  background: linear-gradient(-45deg, var(--neon-blue), var(--neon-pink), var(--neon-green), #0011ff);
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+header, footer {
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 15px 20px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,255,255,0.3);
+}
+
+header h1 {
+  font-size: 28px;
+  text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink);
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+nav input, nav select {
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+nav a {
+  color: var(--neon-blue);
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+nav a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink);
+}
+
+.hero {
+  padding: 30px;
+  text-align: center;
+}
+.hero h2 {
+  font-size: 36px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-blue);
+  animation: glowPulse 3s infinite alternate;
+}
+.hero p { color: #ddd; }
+
+@keyframes glowPulse {
+  from { text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink); }
+  to   { text-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-blue); }
+}
+
+main { flex: 1; padding: 20px; }
+h2 { text-align: center; margin-bottom: 20px; }
+
+/* === Storefront Grid layout === */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.game-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.game-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: #111;
+}
+.game-card h3 {
+  margin: 8px 0;
+  font-size: 18px;
+  color: var(--neon-blue);
+}
+.game-card .price {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.game-card .price .current { color: #0f0; font-weight: 700; }
+.game-card .price .rrp { color: #ccc; text-decoration: line-through; }
+
+.game-card button {
+  border: 2px solid var(--neon-blue);
+  background: transparent;
+  color: var(--neon-blue);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.game-card button:hover {
+  background: var(--neon-blue);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink);
+}
+.game-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink);
+}
+
+footer {
+  margin-top: 20px;
+}
+
+/* === My Orders Styling (Improved) === */
+.card {
+  background: linear-gradient(135deg, rgba(25,25,45,0.95), rgba(10,10,20,0.9));
+  border: 1px solid rgba(0,255,255,0.3);
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(0,255,255,0.2), 0 0 50px rgba(255,0,255,0.1);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  margin: 30px auto;
+  padding: 20px;
+  width: 95%;
+  max-width: 1000px;
+  animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+thead th {
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+  color: #000;
+  padding: 14px;
+  text-align: left;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+tbody td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: #eee;
+}
+
+tbody tr:hover td {
+  background: rgba(255,255,255,0.05);
+  transition: background 0.3s ease;
+}
+
+.no-orders {
+  text-align: center;
+  padding: 30px;
+  font-size: 16px;
+  color: #aaa;
+}
+
+ul.items {
+  margin: 0;
+  padding-left: 18px;
+  list-style: square;
+  color: var(--neon-green);
+}
+
+/* Status badges with neon pill style */
+.status {
+  font-weight: bold;
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.status.Pending {
+  background: rgba(255,255,0,0.15);
+  border: 1px solid #ff0;
+  color: #ff0;
+}
+.status.Completed,
+.status.Delivered {
+  background: rgba(0,255,0,0.15);
+  border: 1px solid #0f0;
+  color: #0f0;
+}
+.status.Cancelled {
+  background: rgba(255,0,0,0.15);
+  border: 1px solid #f55;
+  color: #f55;
+}
+
+.actions {
+  margin-top: 20px;
+  text-align: center;
+}
+.actions a {
+  color: var(--neon-blue);
+  text-decoration: none;
+  font-weight: bold;
+  border: 2px solid var(--neon-blue);
+  padding: 10px 24px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.actions a:hover {
+  background: var(--neon-blue);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink);
+}

@@ -8,22 +8,36 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <nav>
-    <h1 onclick="window.location.href='/'">🎮 Game Deals Hub</h1>
-    <input type="text" id="search" placeholder="🔍 Search games..." />
-    <select id="filter">
-      <option value="all">All Platforms</option>
-      <option value="Xbox">Xbox</option>
-      <option value="PlayStation">PlayStation</option>
-      <option value="PC">PC</option>
-      <option value="mobile">Mobile</option>
-    </select>
-    <span id="customer-links">
-      <a id="auth-link" href="/login-customer.html">👤 Login</a>
-    </span>
-    <a class="admin-link" href="/login.html">Admin</a>
-    <a class="cart-link" href="/cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
-  </nav>
+  <header>
+    <nav>
+      <h1 onclick="window.location.href='/'">🎮 Game Deals Hub</h1>
+      <input type="text" id="search" placeholder="🔍 Search games..." />
+      <select id="filter">
+        <option value="all">All Platforms</option>
+        <option value="Xbox">Xbox</option>
+        <option value="PlayStation">PlayStation</option>
+        <option value="PC">PC</option>
+        <option value="mobile">Mobile</option>
+      </select>
+      <span id="customer-links">
+        <a id="auth-link" href="/login-customer.html">👤 Login</a>
+      </span>
+      <a class="admin-link" href="/login.html">Admin</a>
+      <a class="cart-link" href="/cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+    </nav>
+
+    <div class="hero">
+      <h2>Find the Best Gaming Deals</h2>
+      <p>Xbox, PlayStation & PC • Updated Daily with Hot Discounts</p>
+    </div>
+  </header>
+
+  <main>
+    <h2>🔥 Featured Games</h2>
+    <div class="games-grid" id="gamesContainer">
+      <div class="loading">Loading amazing deals...</div>
+    </div>
+  </main>
 
   <footer>
     <p>© 2025 Game Deals Hub • Your #1 Source for Gaming Deals</p>
@@ -86,6 +100,10 @@
       <div class="loading">Loading amazing deals...</div>
     </div>
   </main>
+
+  <footer>
+    <p>© 2025 Game Deals Hub • Your #1 Source for Gaming Deals</p>
+  </footer>
 
   <script src="script.js"></script>
   <script>

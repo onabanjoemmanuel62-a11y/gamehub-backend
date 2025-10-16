@@ -2,41 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Game Deals Hub</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Deals Hub - Best Gaming Deals</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <nav>
-      <h1>🎮 Game Deals Hub</h1>
-      <input type="text" id="search" placeholder="Search games..." />
-      <select id="filter">
-        <option value="all">All Categories</option>
-        <option value="Xbox">Xbox</option>
-        <option value="PlayStation">PlayStation</option>
-        <option value="PC">PC</option>
-        <option value="mobile">mobile</option>
-      </select>
-      <span id="customer-links">
-        <a id="auth-link" href="/login-customer.html">👤 Login</a>
-      </span>
-      <a class="admin-link" href="/login.html">Admin</a>
-      <a class="cart-link" href="/cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
-    </nav>
-    <div class="hero">
-      <h2>Find the Best Xbox, PlayStation & PC Deals</h2>
-      <p>Updated daily with the hottest discounts</p>
-    </div>
+  <nav>
+    <h1 onclick="window.location.href='/'">🎮 Game Deals Hub</h1>
+    <input type="text" id="search" placeholder="🔍 Search games..." />
+    <select id="filter">
+      <option value="all">All Platforms</option>
+      <option value="Xbox">Xbox</option>
+      <option value="PlayStation">PlayStation</option>
+      <option value="PC">PC</option>
+      <option value="mobile">Mobile</option>
+    </select>
+    <span id="customer-links">
+      <a id="auth-link" href="/login-customer.html">👤 Login</a>
+    </span>
+    <a class="admin-link" href="/login.html">Admin</a>
+    <a class="cart-link" href="/cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+  </nav>
+
+  <header class="hero">
+    <h2>Find the Best Gaming Deals</h2>
+    <p>Xbox, PlayStation & PC • Updated Daily with Hot Discounts</p>
   </header>
 
   <main>
-    <h2>Featured Games</h2>
-    <div class="games-grid" id="gamesContainer"></div>
+    <h2>🔥 Featured Games</h2>
+    <div class="games-grid" id="gamesContainer">
+      <div class="loading">Loading amazing deals...</div>
+    </div>
   </main>
 
   <footer>
-    <p>© 2025 Game Deals Hub</p>
+    <p>© 2025 Game Deals Hub • Your #1 Source for Gaming Deals</p>
   </footer>
 
   <script src="script.js"></script>
@@ -46,7 +48,6 @@
         const res = await fetch('https://gamehub-backend-a0c2.onrender.com/customer-check', { credentials: 'include' });
         const data = await res.json();
         const container = document.getElementById('customer-links');
-
         if (data.authenticated) {
           container.innerHTML = `
             <a href="/my-orders.html">📦 My Orders</a>
@@ -64,7 +65,68 @@
         console.error("Auth check failed", err);
       }
     }
+    updateAuthLinks();
+  </script>
+</body>
+</html>
+<body>
+  <nav>
+    <h1 onclick="window.location.href='/'">🎮 Game Deals Hub</h1>
+    <input type="text" id="search" placeholder="🔍 Search games..." />
+    <select id="filter">
+      <option value="all">All Platforms</option>
+      <option value="Xbox">Xbox</option>
+      <option value="PlayStation">PlayStation</option>
+      <option value="PC">PC</option>
+      <option value="mobile">Mobile</option>
+    </select>
+    <span id="customer-links">
+      <a id="auth-link" href="/login-customer.html">👤 Login</a>
+    </span>
+    <a class="admin-link" href="/login.html">Admin</a>
+    <a class="cart-link" href="/cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+  </nav>
 
+  <header class="hero">
+    <h2>Find the Best Gaming Deals</h2>
+    <p>Xbox, PlayStation & PC • Updated Daily with Hot Discounts</p>
+  </header>
+
+  <main>
+    <h2>🔥 Featured Games</h2>
+    <div class="games-grid" id="gamesContainer">
+      <div class="loading">Loading amazing deals...</div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 Game Deals Hub • Your #1 Source for Gaming Deals</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    async function updateAuthLinks() {
+      try {
+        const res = await fetch('https://gamehub-backend-a0c2.onrender.com/customer-check', { credentials: 'include' });
+        const data = await res.json();
+        const container = document.getElementById('customer-links');
+        if (data.authenticated) {
+          container.innerHTML = `
+            <a href="/my-orders.html">📦 My Orders</a>
+            <a href="#" id="logout-link">🚪 Logout</a>
+          `;
+          document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('https://gamehub-backend-a0c2.onrender.com/customer-logout', { credentials: 'include' });
+            window.location.href = "/login-customer.html";
+          });
+        } else {
+          container.innerHTML = `<a id="auth-link" href="/login-customer.html">👤 Login</a>`;
+        }
+      } catch (err) {
+        console.error("Auth check failed", err);
+      }
+    }
     updateAuthLinks();
   </script>
 </body>

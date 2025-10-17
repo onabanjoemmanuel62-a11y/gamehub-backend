@@ -3,6 +3,7 @@ const { MongoClient } = require("mongodb");
 const cors = require("cors");
 const path = require("path");
 const session = require("express-session");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);

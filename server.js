@@ -298,12 +298,12 @@ async function start() {
       }
     });
 
-    // ==================== GAME MANAGEMENT API ====================
+    // ==================== GAME MANAGEMENT API (JSON FILE) ====================
     
     // GET all games (public)
-    app.get("/api/games", async (req, res) => {
+    app.get("/api/games", (req, res) => {
       try {
-        const allGames = await games.find({}).toArray();
+        const allGames = readGamesFromFile();
         res.json(allGames);
       } catch (err) {
         console.error("Error fetching games:", err);
@@ -312,10 +312,11 @@ async function start() {
     });
 
     // GET single game (public)
-    app.get("/api/games/:id", async (req, res) => {
+    app.get("/api/games/:id", (req, res) => {
       try {
         const gameId = parseInt(req.params.id);
-        const game = await games.findOne({ id: gameId });
+        const allGames = readGamesFromFile();
+        const game = allGames.find(g => g.id === gameId);
         
         if (!game) {
           return res.status(404).json({ error: "Game not found" });
@@ -329,7 +330,7 @@ async function start() {
     });
 
     // POST create new game (admin only)
-    app.post("/api/games", upload.single('image'), async (req, res) => {
+    app.post("/api/games", upload.single('image'), (req, res) => {
       if (!req.session.userId || !req.session.isAdmin) {
         return res.status(403).json({ error: "Admin access required" });
       }
@@ -346,20 +347,25 @@ async function start() {
           return res.status(400).json({ error: "Price must be a valid number" });
         }
 
+        const allGames = readGamesFromFile();
+        
         // Generate new ID
-        const lastGame = await games.find({}).sort({ id: -1 }).limit(1).toArray();
-        const newId = lastGame.length > 0 ? lastGame[0].id + 1 : 1;
+        const newId = allGames.length > 0 ? Math.max(...allGames.map(g => g.id)) + 1 : 1;
 
         const newGame = {
           id: newId,
           name,
           price: parsedPrice,
           category: category || 'Uncategorized',
-          image: req.file ? `/uploads/${req.file.filename}` : '',
-          createdAt: new Date()
+          image: req.file ? `/uploads/${req.file.filename}` : ''
         };
 
-        await games.insertOne(newGame);
+        allGames.push(newGame);
+        
+        if (!writeGamesToFile(allGames)) {
+          return res.status(500).json({ error: "Failed to save game" });
+        }
+
         res.json({ success: true, game: newGame });
       } catch (err) {
         console.error("Error creating game:", err);
@@ -368,7 +374,7 @@ async function start() {
     });
 
     // PUT update game (admin only)
-    app.put("/api/games/:id", upload.single('image'), async (req, res) => {
+    app.put("/api/games/:id", upload.single('image'), (req, res) => {
       if (!req.session.userId || !req.session.isAdmin) {
         return res.status(403).json({ error: "Admin access required" });
       }
@@ -377,30 +383,30 @@ async function start() {
         const gameId = parseInt(req.params.id);
         const { name, price, category } = req.body;
 
-        const game = await games.findOne({ id: gameId });
-        if (!game) {
+        const allGames = readGamesFromFile();
+        const gameIndex = allGames.findIndex(g => g.id === gameId);
+        
+        if (gameIndex === -1) {
           return res.status(404).json({ error: "Game not found" });
         }
 
-        const updateData = {};
-        
-        if (name) updateData.name = name;
+        // Update game properties
+        if (name) allGames[gameIndex].name = name;
         if (price) {
           const parsedPrice = parseFloat(price);
           if (isNaN(parsedPrice)) {
             return res.status(400).json({ error: "Price must be a valid number" });
           }
-          updateData.price = parsedPrice;
+          allGames[gameIndex].price = parsedPrice;
         }
-        if (category) updateData.category = category;
-        if (req.file) updateData.image = `/uploads/${req.file.filename}`;
-        
-        updateData.updatedAt = new Date();
+        if (category) allGames[gameIndex].category = category;
+        if (req.file) allGames[gameIndex].image = `/uploads/${req.file.filename}`;
 
-        await games.updateOne({ id: gameId }, { $set: updateData });
+        if (!writeGamesToFile(allGames)) {
+          return res.status(500).json({ error: "Failed to update game" });
+        }
         
-        const updatedGame = await games.findOne({ id: gameId });
-        res.json({ success: true, game: updatedGame });
+        res.json({ success: true, game: allGames[gameIndex] });
       } catch (err) {
         console.error("Error updating game:", err);
         res.status(500).json({ error: "Failed to update game" });
@@ -408,17 +414,22 @@ async function start() {
     });
 
     // DELETE game (admin only)
-    app.delete("/api/games/:id", async (req, res) => {
+    app.delete("/api/games/:id", (req, res) => {
       if (!req.session.userId || !req.session.isAdmin) {
         return res.status(403).json({ error: "Admin access required" });
       }
 
       try {
         const gameId = parseInt(req.params.id);
-        const result = await games.deleteOne({ id: gameId });
+        const allGames = readGamesFromFile();
+        const filteredGames = allGames.filter(g => g.id !== gameId);
 
-        if (result.deletedCount === 0) {
+        if (filteredGames.length === allGames.length) {
           return res.status(404).json({ error: "Game not found" });
+        }
+
+        if (!writeGamesToFile(filteredGames)) {
+          return res.status(500).json({ error: "Failed to delete game" });
         }
 
         res.json({ success: true, message: "Game deleted successfully" });

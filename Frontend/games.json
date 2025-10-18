@@ -54,5 +54,12 @@
     "price": 249.99,
     "image": "/uploads/1760434556054-macbook.jpg",
     "category": "PC"
+  },
+  {
+    "id": 9,
+    "name": "Iphone 14 pro max",
+    "price": 249.99,
+    "image": "",
+    "category": "mobile"
   }
 ]

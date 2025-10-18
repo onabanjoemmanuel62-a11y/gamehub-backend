@@ -12,6 +12,29 @@ console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 
+// Helper functions for games.json
+function readGamesFromFile() {
+  try {
+    const gamesPath = path.join(__dirname, 'Frontend', 'games.json');
+    const data = fs.readFileSync(gamesPath, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error('Error reading games.json:', err);
+    return [];
+  }
+}
+
+function writeGamesToFile(games) {
+  try {
+    const gamesPath = path.join(__dirname, 'Frontend', 'games.json');
+    fs.writeFileSync(gamesPath, JSON.stringify(games, null, 2));
+    return true;
+  } catch (err) {
+    console.error('Error writing games.json:', err);
+    return false;
+  }
+}
+
 // Setup multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

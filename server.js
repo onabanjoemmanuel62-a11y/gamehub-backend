@@ -4,11 +4,41 @@ const cors = require("cors");
 const path = require("path");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
+const multer = require("multer");
+const fs = require("fs");
 require("dotenv").config();
 
 console.log("DEBUG MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
+
+// Setup multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, 'Frontend/uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Only image files are allowed!'));
+  }
+});
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, Postman)
@@ -53,38 +83,83 @@ async function start() {
     const db = client.db("gamehub");
     const users = db.collection("users");
     const orders = db.collection("orders");
+    const games = db.collection("games");
 
-    // Register route
+    // Register route with password hashing
     app.post("/register", async (req, res) => {
       const { username, password, email } = req.body;
+      
+      // Input validation
+      if (!username || !password || !email) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+      
+      if (password.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters" });
+      }
+      
       const existing = await users.findOne({ username });
       if (existing) {
         return res.status(400).json({ error: "User already exists" });
       }
-      await users.insertOne({ username, password, email, createdAt: new Date() });
+      
+      // Hash password with bcrypt
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      await users.insertOne({ 
+        username, 
+        password: hashedPassword, 
+        email, 
+        createdAt: new Date() 
+      });
+      
       res.json({ success: true });
     });
 
-    // Admin login route
+    // Admin login route with bcrypt
     app.post("/login", async (req, res) => {
       const { username, password } = req.body;
-      const user = await users.findOne({ username, password });
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+      
+      const user = await users.findOne({ username });
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
+      
+      // Compare hashed password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
       req.session.userId = user._id;
       req.session.username = user.username;
       req.session.isAdmin = true;
       res.json({ success: true, user: { username: user.username } });
     });
 
-    // Customer login route
+    // Customer login route with bcrypt
     app.post("/customer-login", async (req, res) => {
       const { username, password } = req.body;
-      const user = await users.findOne({ username, password });
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+      
+      const user = await users.findOne({ username });
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
+      
+      // Compare hashed password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
       req.session.userId = user._id;
       req.session.username = user.username;
       req.session.isCustomer = true;
@@ -197,6 +272,136 @@ async function start() {
       } catch (err) {
         console.error("Error updating order:", err);
         res.status(500).json({ error: "Failed to update order" });
+      }
+    });
+
+    // ==================== GAME MANAGEMENT API ====================
+    
+    // GET all games (public)
+    app.get("/api/games", async (req, res) => {
+      try {
+        const allGames = await games.find({}).toArray();
+        res.json(allGames);
+      } catch (err) {
+        console.error("Error fetching games:", err);
+        res.status(500).json({ error: "Failed to fetch games" });
+      }
+    });
+
+    // GET single game (public)
+    app.get("/api/games/:id", async (req, res) => {
+      try {
+        const gameId = parseInt(req.params.id);
+        const game = await games.findOne({ id: gameId });
+        
+        if (!game) {
+          return res.status(404).json({ error: "Game not found" });
+        }
+        
+        res.json(game);
+      } catch (err) {
+        console.error("Error fetching game:", err);
+        res.status(500).json({ error: "Failed to fetch game" });
+      }
+    });
+
+    // POST create new game (admin only)
+    app.post("/api/games", upload.single('image'), async (req, res) => {
+      if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      try {
+        const { name, price, category } = req.body;
+        
+        if (!name || !price) {
+          return res.status(400).json({ error: "Name and price are required" });
+        }
+
+        const parsedPrice = parseFloat(price);
+        if (isNaN(parsedPrice)) {
+          return res.status(400).json({ error: "Price must be a valid number" });
+        }
+
+        // Generate new ID
+        const lastGame = await games.find({}).sort({ id: -1 }).limit(1).toArray();
+        const newId = lastGame.length > 0 ? lastGame[0].id + 1 : 1;
+
+        const newGame = {
+          id: newId,
+          name,
+          price: parsedPrice,
+          category: category || 'Uncategorized',
+          image: req.file ? `/uploads/${req.file.filename}` : '',
+          createdAt: new Date()
+        };
+
+        await games.insertOne(newGame);
+        res.json({ success: true, game: newGame });
+      } catch (err) {
+        console.error("Error creating game:", err);
+        res.status(500).json({ error: "Failed to create game" });
+      }
+    });
+
+    // PUT update game (admin only)
+    app.put("/api/games/:id", upload.single('image'), async (req, res) => {
+      if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      try {
+        const gameId = parseInt(req.params.id);
+        const { name, price, category } = req.body;
+
+        const game = await games.findOne({ id: gameId });
+        if (!game) {
+          return res.status(404).json({ error: "Game not found" });
+        }
+
+        const updateData = {};
+        
+        if (name) updateData.name = name;
+        if (price) {
+          const parsedPrice = parseFloat(price);
+          if (isNaN(parsedPrice)) {
+            return res.status(400).json({ error: "Price must be a valid number" });
+          }
+          updateData.price = parsedPrice;
+        }
+        if (category) updateData.category = category;
+        if (req.file) updateData.image = `/uploads/${req.file.filename}`;
+        
+        updateData.updatedAt = new Date();
+
+        await games.updateOne({ id: gameId }, { $set: updateData });
+        
+        const updatedGame = await games.findOne({ id: gameId });
+        res.json({ success: true, game: updatedGame });
+      } catch (err) {
+        console.error("Error updating game:", err);
+        res.status(500).json({ error: "Failed to update game" });
+      }
+    });
+
+    // DELETE game (admin only)
+    app.delete("/api/games/:id", async (req, res) => {
+      if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      try {
+        const gameId = parseInt(req.params.id);
+        const result = await games.deleteOne({ id: gameId });
+
+        if (result.deletedCount === 0) {
+          return res.status(404).json({ error: "Game not found" });
+        }
+
+        res.json({ success: true, message: "Game deleted successfully" });
+      } catch (err) {
+        console.error("Error deleting game:", err);
+        res.status(500).json({ error: "Failed to delete game" });
       }
     });
 

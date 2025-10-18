@@ -2,146 +2,253 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Game Deals Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-  <div class="sidebar">
-    <h2>⚙️ Admin</h2>
-    <ul>
-      <li><a href="/admin.html">Manage Games</a></li>
-      <li><a href="/admin-orders.html">📦 View Orders</a></li>
-      <li><a href="/logout">Logout</a></li>
-    </ul>
-  </div>
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <h2>🎮 Admin Panel</h2>
+      </div>
+      <nav class="nav-menu">
+        <a href="/admin.html" class="nav-item active">
+          📊 Dashboard
+        </a>
+        <a href="/admin-games.html" class="nav-item">
+          🎮 Manage Games
+        </a>
+        <a href="/admin-orders.html" class="nav-item">
+          📦 View Orders
+        </a>
+        <a href="/index.html" class="nav-item">
+          🏠 Storefront
+        </a>
+        <a href="#" onclick="logout()" class="nav-item logout">
+          🚪 Logout
+        </a>
+      </nav>
+    </aside>
 
-  <div class="main">
-    <header><h1>Game Management</h1></header>
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="dashboard-header">
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p class="subtitle">Welcome back, Admin! Here's what's happening today.</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-refresh" onclick="loadDashboard()">🔄 Refresh</button>
+        </div>
+      </header>
 
-    <section class="game-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Game</th>
-            <th>Price ($)</th>
-            <th>Current image</th>
-            <th>New image</th>
-            <th>Category</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="game-list"></tbody>
-      </table>
-    </section>
+      <!-- Stats Cards -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #00faff, #00d4ff);">
+            📦
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">Total Orders</p>
+            <h2 class="stat-value" id="totalOrders">0</h2>
+            <p class="stat-change">All time</p>
+          </div>
+        </div>
 
-    <section class="add-game">
-      <h2>Add New Game</h2>
-      <form id="addForm" enctype="multipart/form-data">
-        <input type="text" name="name" id="newName" placeholder="Game Name" required />
-        <input type="number" name="price" id="newPrice" placeholder="Price" step="0.01" required />
-        <input type="file" name="image" id="newImage" accept="image/*" />
-        <input type="text" name="category" id="newCategory" placeholder="Category (e.g. Xbox, PlayStation, PC)" required />
-        <button type="submit">Add Game</button>
-      </form>
-    </section>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #39ff14, #2ecc71);">
+            💰
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">Total Revenue</p>
+            <h2 class="stat-value" id="totalRevenue">$0.00</h2>
+            <p class="stat-change">All time</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #ff00ff, #ff1493);">
+            ⏳
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">Pending Orders</p>
+            <h2 class="stat-value" id="pendingOrders">0</h2>
+            <p class="stat-change">Needs attention</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #ff6b6b, #ff4757);">
+            🎮
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">Total Games</p>
+            <h2 class="stat-value" id="totalGames">0</h2>
+            <p class="stat-change">In catalog</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="quick-actions">
+        <h2 class="section-title">Quick Actions</h2>
+        <div class="actions-grid">
+          <a href="/admin-games.html" class="action-card">
+            <div class="action-icon">➕</div>
+            <h3>Add New Game</h3>
+            <p>Add a new game to your catalog</p>
+          </a>
+          <a href="/admin-orders.html" class="action-card">
+            <div class="action-icon">📋</div>
+            <h3>View All Orders</h3>
+            <p>Manage customer orders</p>
+          </a>
+          <a href="/admin-games.html" class="action-card">
+            <div class="action-icon">✏️</div>
+            <h3>Edit Games</h3>
+            <p>Update game details & prices</p>
+          </a>
+          <a href="/index.html" class="action-card">
+            <div class="action-icon">👁️</div>
+            <h3>View Storefront</h3>
+            <p>See what customers see</p>
+          </a>
+        </div>
+      </section>
+
+      <!-- Recent Orders -->
+      <section class="recent-section">
+        <div class="section-header">
+          <h2 class="section-title">Recent Orders</h2>
+          <a href="/admin-orders.html" class="view-all">View All →</a>
+        </div>
+        <div class="orders-table-container">
+          <table class="modern-table" id="recentOrdersTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrdersBody">
+              <tr>
+                <td colspan="5" class="loading">Loading recent orders...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   </div>
 
   <script>
-    async function loadGames() {
-      const res = await fetch('https://gamehub-backend-a0c2.onrender.com/games.json', { cache: 'no-store', credentials: 'include' });
-      if (!res.ok) {
-        alert('Could not load games. Are you logged in?');
-        return;
+    async function loadDashboard() {
+      try {
+        // Load stats
+        await loadStats();
+        // Load recent orders
+        await loadRecentOrders();
+      } catch (err) {
+        console.error('Dashboard error:', err);
       }
-      const games = await res.json();
-      const list = document.getElementById('game-list');
-      list.innerHTML = '';
-      games.forEach(g => {
-        list.innerHTML += `
+    }
+
+    async function loadStats() {
+      try {
+        // Fetch all orders
+        const ordersRes = await fetch('https://gamehub-backend-a0c2.onrender.com/orders', { 
+          credentials: 'include' 
+        });
+        
+        if (ordersRes.status === 403) {
+          alert('Not authorized. Please log in as admin.');
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const orders = await ordersRes.json();
+        
+        // Calculate stats
+        const totalOrders = orders.length;
+        const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+        const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+
+        // Fetch games count
+        const gamesRes = await fetch('https://gamehub-backend-a0c2.onrender.com/api/games', { 
+          credentials: 'include' 
+        });
+        const games = await gamesRes.json();
+        const totalGames = games.length;
+
+        // Update UI
+        document.getElementById('totalOrders').textContent = totalOrders;
+        document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+        document.getElementById('pendingOrders').textContent = pendingOrders;
+        document.getElementById('totalGames').textContent = totalGames;
+
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    }
+
+    async function loadRecentOrders() {
+      try {
+        const res = await fetch('https://gamehub-backend-a0c2.onrender.com/orders', { 
+          credentials: 'include' 
+        });
+        
+        if (res.status === 403) {
+          return;
+        }
+
+        const orders = await res.json();
+        const tbody = document.getElementById('recentOrdersBody');
+        
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="no-data">No orders yet</td></tr>';
+          return;
+        }
+
+        // Show latest 5 orders
+        const recentOrders = orders.slice(0, 5);
+        
+        tbody.innerHTML = recentOrders.map(o => `
           <tr>
-            <td>${g.name}</td>
-            <td><input type="number" id="price-${g.id}" value="${Number(g.price)}" step="0.01" /></td>
-            <td>${g.image ? `<img src="${g.image}" alt="${g.name}" width="60" height="60" style="object-fit:cover;border-radius:6px;">` : 'No image'}</td>
-            <td><input type="file" id="image-${g.id}" accept="image/*" /></td>
-            <td><input type="text" id="category-${g.id}" value="${g.category || ''}" /></td>
-            <td>
-              <button onclick="updateGame(${g.id})">Update</button>
-              <button onclick="deleteGame(${g.id})" style="background:#ff4444;">Delete</button>
-            </td>
-          </tr>`;
-      });
-    }
+            <td><strong>${o.id}</strong></td>
+            <td>${o.name || o.customerName}</td>
+            <td><strong>$${(o.total || 0).toFixed(2)}</strong></td>
+            <td>${new Date(o.date).toLocaleDateString()}</td>
+            <td><span class="status-badge status-${o.status.toLowerCase()}">${o.status}</span></td>
+          </tr>
+        `).join('');
 
-    async function updateGame(id) {
-      const priceInput = document.getElementById('price-' + id);
-      const fileInput = document.getElementById('image-' + id);
-      const categoryInput = document.getElementById('category-' + id);
-
-      const price = parseFloat(priceInput.value);
-      if (Number.isNaN(price)) {
-        alert('Please enter a valid price.');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('id', String(id));
-      formData.append('price', String(price));
-      formData.append('category', categoryInput.value);
-      if (fileInput.files && fileInput.files[0]) {
-        formData.append('image', fileInput.files[0]);
-      }
-
-      const res = await fetch('https://gamehub-backend-a0c2.onrender.com/update-game', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        alert('Update failed: ' + (err.error || res.statusText));
-        return;
-      }
-      loadGames();
-    }
-
-    async function deleteGame(id) {
-      const res = await fetch('https://gamehub-backend-a0c2.onrender.com/delete-game', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        alert('Delete failed: ' + (err.error || res.statusText));
-        return;
-      }
-      loadGames();
-    }
-
-    async function addGame(e) {
-      e.preventDefault();
-      const form = document.getElementById('addForm');
-      const formData = new FormData(form);
-
-      const res = await fetch('https://gamehub-backend-a0c2.onrender.com/add-game', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-
-      if (res.ok) {
-        form.reset();
-        loadGames();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        alert('Failed to add game: ' + (err.error || res.statusText));
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        document.getElementById('recentOrdersBody').innerHTML = 
+          '<tr><td colspan="5" class="no-data">Error loading orders</td></tr>';
       }
     }
 
-    document.getElementById('addForm').addEventListener('submit', addGame);
-    window.onload = loadGames;
+    async function logout() {
+      try {
+        await fetch('https://gamehub-backend-a0c2.onrender.com/customer-logout', { 
+          credentials: 'include' 
+        });
+        window.location.href = '/login.html';
+      } catch (err) {
+        console.error('Logout error:', err);
+        window.location.href = '/login.html';
+      }
+    }
+
+    // Load dashboard on page load
+    window.onload = loadDashboard;
   </script>
 </body>
 </html>

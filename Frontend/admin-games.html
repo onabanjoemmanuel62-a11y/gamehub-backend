@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Management - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <h2>🎮 Admin Panel</h2>
+      </div>
+      <nav class="nav-menu">
+        <a href="/admin.html" class="nav-item">
+          📊 Dashboard
+        </a>
+        <a href="/admin-games.html" class="nav-item active">
+          🎮 Manage Games
+        </a>
+        <a href="/admin-orders.html" class="nav-item">
+          📦 View Orders
+        </a>
+        <a href="/index.html" class="nav-item">
+          🏠 Storefront
+        </a>
+        <a href="#" onclick="logout()" class="nav-item logout">
+          🚪 Logout
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="dashboard-header">
+        <div>
+          <h1>Game Management</h1>
+          <p class="subtitle">Add, edit, or remove games from your catalog</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-primary" onclick="showAddModal()">➕ Add New Game</button>
+        </div>
+      </header>
+
+      <!-- Games Grid -->
+      <section class="games-management">
+        <div id="gamesGrid" class="games-grid-admin">
+          <div class="loading-state">Loading games...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Add/Edit Game Modal -->
+  <div id="gameModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add New Game</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <form id="gameForm" class="game-form">
+        <input type="hidden" id="gameId" />
+        
+        <div class="form-group">
+          <label for="gameName">Game Name *</label>
+          <input type="text" id="gameName" name="name" required placeholder="Enter game name" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="gamePrice">Price ($) *</label>
+            <input type="number" id="gamePrice" name="price" step="0.01" required placeholder="0.00" />
+          </div>
+
+          <div class="form-group">
+            <label for="gameCategory">Platform *</label>
+            <select id="gameCategory" name="category" required>
+              <option value="">Select platform</option>
+              <option value="Xbox">Xbox</option>
+              <option value="PlayStation">PlayStation</option>
+              <option value="PC">PC</option>
+              <option value="mobile">Mobile</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gameImage">Game Image</label>
+          <input type="file" id="gameImage" name="image" accept="image/*" />
+          <small>Upload a cover image for the game (optional)</small>
+        </div>
+
+        <div class="form-group" id="currentImageContainer" style="display: none;">
+          <label>Current Image</label>
+          <img id="currentImage" src="" alt="Current" style="max-width: 200px; border-radius: 8px;" />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary">
+            <span id="submitText">Add Game</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let editingGameId = null;
+
+    async function loadGames() {
+      try {
+        const res = await fetch('https://gamehub-backend-a0c2.onrender.com/api/games', {
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to load games');
+        }
+
+        const games = await res.json();
+        renderGames(games);
+      } catch (err) {
+        console.error('Error loading games:', err);
+        document.getElementById('gamesGrid').innerHTML = 
+          '<div class="error-state">Error loading games. Please try again.</div>';
+      }
+    }
+
+    function renderGames(games) {
+      const grid = document.getElementById('gamesGrid');
+      
+      if (games.length === 0) {
+        grid.innerHTML = '<div class="empty-state">No games yet. Add your first game!</div>';
+        return;
+      }
+
+      grid.innerHTML = games.map(game => `
+        <div class="game-card-admin">
+          <div class="game-image-admin">
+            ${game.image ? `<img src="${game.image}" alt="${game.name}" />` : '<div class="no-image">🎮</div>'}
+          </div>
+          <div class="game-details-admin">
+            <h3>${game.name}</h3>
+            <div class="game-meta">
+              <span class="game-price">$${Number(game.price).toFixed(2)}</span>
+              <span class="game-platform">${game.category || 'N/A'}</span>
+            </div>
+          </div>
+          <div class="game-actions">
+            <button class="btn-edit" onclick="editGame(${game.id})">✏️ Edit</button>
+            <button class="btn-delete" onclick="deleteGame(${game.id}, '${game.name}')">🗑️ Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showAddModal() {
+      editingGameId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Game';
+      document.getElementById('submitText').textContent = 'Add Game';
+      document.getElementById('gameForm').reset();
+      document.getElementById('gameId').value = '';
+      document.getElementById('currentImageContainer').style.display = 'none';
+      document.getElementById('gameModal').classList.add('active');
+    }
+
+    async function editGame(id) {
+      try {
+        const res = await fetch('https://gamehub-backend-a0c2.onrender.com/api/games', {
+          credentials: 'include'
+        });
+        const games = await res.json();
+        const game = games.find(g => g.id === id);
+        
+        if (!game) {
+          alert('Game not found');
+          return;
+        }
+
+        editingGameId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Game';
+        document.getElementById('submitText').textContent = 'Update Game';
+        document.getElementById('gameId').value = id;
+        document.getElementById('gameName').value = game.name;
+        document.getElementById('gamePrice').value = game.price;
+        document.getElementById('gameCategory').value = game.category || '';
+        
+        if (game.image) {
+          document.getElementById('currentImageContainer').style.display = 'block';
+          document.getElementById('currentImage').src = game.image;
+        } else {
+          document.getElementById('currentImageContainer').style.display = 'none';
+        }
+        
+        document.getElementById('gameModal').classList.add('active');
+      } catch (err) {
+        console.error('Error loading game:', err);
+        alert('Error loading game details');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('gameModal').classList.remove('active');
+      document.getElementById('gameForm').reset();
+      editingGameId = null;
+    }
+
+    async function deleteGame(id, name) {
+      if (!confirm(`Are you sure you want to delete "${name}"?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch('https://gamehub-backend-a0c2.onrender.com/api/games/' + id, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          throw new Error('Delete failed');
+        }
+
+        alert('Game deleted successfully!');
+        loadGames();
+      } catch (err) {
+        console.error('Error deleting game:', err);
+        alert('Failed to delete game');
+      }
+    }
+
+    document.getElementById('gameForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const gameId = document.getElementById('gameId').value;
+      
+      try {
+        let url = 'https://gamehub-backend-a0c2.onrender.com/api/games';
+        let method = 'POST';
+        
+        if (gameId) {
+          url = `https://gamehub-backend-a0c2.onrender.com/api/games/${gameId}`;
+          method = 'PUT';
+        }
+
+        const res = await fetch(url, {
+          method: method,
+          body: formData,
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Operation failed');
+        }
+
+        alert(gameId ? 'Game updated successfully!' : 'Game added successfully!');
+        closeModal();
+        loadGames();
+      } catch (err) {
+        console.error('Error saving game:', err);
+        alert('Failed to save game: ' + err.message);
+      }
+    });
+
+    async function logout() {
+      try {
+        await fetch('https://gamehub-backend-a0c2.onrender.com/customer-logout', { 
+          credentials: 'include' 
+        });
+        window.location.href = '/login.html';
+      } catch (err) {
+        console.error('Logout error:', err);
+        window.location.href = '/login.html';
+      }
+    }
+
+    // Load games on page load
+    window.onload = loadGames;
+  </script>
+</body>
+</html>

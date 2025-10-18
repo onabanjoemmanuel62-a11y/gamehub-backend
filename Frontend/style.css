@@ -69,7 +69,6 @@ nav h1 {
   font-size: 1.5rem;
   font-weight: 900;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
-  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 30px rgba(0, 250, 255, 0.3);
@@ -194,7 +193,6 @@ nav a:hover {
   font-weight: 900;
   margin-bottom: 1rem;
   background: linear-gradient(135deg, #fff, var(--primary));
-  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 50px rgba(0, 250, 255, 0.5);
@@ -268,9 +266,10 @@ main > h2 {
 .game-card img {
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  object-fit: contain; /* Changed from cover to contain */
+  background: #000; /* Dark background so images stand out */
+  padding: 0.5rem; /* Add padding so images aren't touching edges */
   transition: transform 0.4s ease;
-  background: #111;
 }
 
 .game-card:hover img {

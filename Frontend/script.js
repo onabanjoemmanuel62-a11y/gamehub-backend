@@ -69,13 +69,12 @@ function addToCart(id, name, price, image) {
   const existing = cart.find(item => item.id === id);
   if (existing) {
     existing.qty += 1;
+    toast.success(`${name} quantity updated! (${existing.qty})`);
   } else {
     cart.push({ id, name, price, image, qty: 1 });
+    toast.success(`${name} added to cart! 🎮`);
   }
   saveCart();
-  
-  // Better notification (you can replace alert with a toast notification later)
-  alert(`✅ ${name} added to cart!`);
 }
 
 // Search filter

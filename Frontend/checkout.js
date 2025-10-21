@@ -49,9 +49,12 @@ function placeOrder(e) {
   const payment = form.payment.value;
 
   if (!payment) {
-    alert("Please select a payment method.");
+    toast.warning("Please select a payment method.");
     return;
   }
+
+  // Show loading toast
+  toast.info("Processing your order...");
 
   // First check if a customer is logged in
   fetch('https://gamehub-backend-a0c2.onrender.com/customer-check', { credentials: 'include' })
@@ -88,14 +91,17 @@ function placeOrder(e) {
           total: cart.reduce((sum, item) => sum + item.price * item.qty, 0)
         }));
         localStorage.removeItem("cart");
-        window.location.href = "/confirmation.html";
+        toast.success("Order placed successfully! 🎉");
+        setTimeout(() => {
+          window.location.href = "/confirmation.html";
+        }, 1000);
       } else {
-        alert("Error placing order: " + (data.error || "Unknown error"));
+        toast.error("Error placing order: " + (data.error || "Unknown error"));
       }
     })
     .catch(err => {
       console.error("Order error:", err);
-      alert("Failed to place order. Please try again.");
+      toast.error("Failed to place order. Please try again.");
     });
 }
 
